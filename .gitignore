@@ -1,0 +1,27 @@
+# Fichiers LaTeX auxiliaires
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.nav
+*.snm
+*.vrb
+
+# Fichiers macOS
+.DS_Store
+._*
+
+# Fichiers d'éditeurs
+.vscode/
+*.swp
+*~
+
+# Fichiers de compilation
+*.pdf
+!doc/*.pdf
+!exemples/*.pdf

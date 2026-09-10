@@ -1,0 +1,149 @@
+% ============================================================
+% outilsprof.sty
+% Package d'outils pour l'enseignement
+% Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
+% Version : 1.0
+% Date : 2026/09/10
+% ============================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{outilsprof}[2026/09/10 v2.4 Outils pour l'enseignement]
+
+% ============================================================
+% DÉPENDANCES
+% ============================================================
+\RequirePackage{tikz}
+\RequirePackage{pgffor}
+\RequirePackage{xparse}
+\RequirePackage{xstring}
+
+% ============================================================
+% SECTION 1 : AXE GRADUÉ
+% ============================================================
+% Paramètres nommés :
+%   longueur : largeur relative (0.8 = 80% de \textwidth)  [défaut : 0.8]
+%   debut    : début de la graduation (ex: 0)              [défaut : 0]
+%   fin      : fin de la graduation (ex: 400)              [défaut : 100]
+%   pas      : pas entre nombres repères (ex: 100)         [défaut : 10]
+%   nombre   : nombre de sous-intervalles entre repères    [défaut : 2]
+%   points   : liste de points {A/120, B/340/blue}         [défaut : vide]
+%
+% Syntaxe des points :
+%   nom/position           → intérieur rouge (défaut), étiquette noire
+%   nom/position/couleur   → intérieur de la couleur spécifiée
+%
+% Exemples :
+%   \axegradue
+%   \axegradue[longueur=0.8, fin=400, pas=100, nombre=5]
+%   \axegradue[debut=100, fin=500, pas=100, nombre=5]
+%   \axegradue[points={A/120, B/340/blue, C/60/green}]
+% ============================================================
+
+% --- Définition des clés ---
+\ExplSyntaxOn
+\keys_define:nn { outilsprof / axegradue }
+{
+    longueur .tl_set:N  = \l__axe_longueur_tl,
+    longueur .initial:n = 0.8,
+    debut    .tl_set:N  = \l__axe_debut_tl,
+    debut    .initial:n = 0,
+    fin      .tl_set:N  = \l__axe_fin_tl,
+    fin      .initial:n = 100,
+    pas      .tl_set:N  = \l__axe_pas_tl,
+    pas      .initial:n = 10,
+    nombre   .tl_set:N  = \l__axe_nombre_tl,
+    nombre   .initial:n = 2,
+    points   .tl_set:N  = \l__axe_points_tl,
+    points   .initial:n = {},
+}
+
+% --- Macro pour récupérer les valeurs (utilisable hors ExplSyntax) ---
+\NewDocumentCommand{\axeRecuperer}{m}{%
+    \keys_set:nn { outilsprof / axegradue } { #1 }
+    \tl_set_eq:NN \axeLongueur \l__axe_longueur_tl
+    \tl_set_eq:NN \axeDebut    \l__axe_debut_tl
+    \tl_set_eq:NN \axeFin      \l__axe_fin_tl
+    \tl_set_eq:NN \axePas      \l__axe_pas_tl
+    \tl_set_eq:NN \axeNombre   \l__axe_nombre_tl
+    \tl_set_eq:NN \axePoints   \l__axe_points_tl
+}
+\ExplSyntaxOff
+
+% --- Longueur temporaire ---
+\newlength{\largeurPt}
+
+% ============================================================
+% COMMANDE PRINCIPALE : \axegradue
+% ============================================================
+\NewDocumentCommand{\axegradue}{O{}}{%
+    \axeRecuperer{#1}%
+    \begin{tikzpicture}[every node/.style={font=\small}]
+        % --- Largeur en nombre pur ---
+        \setlength{\largeurPt}{\axeLongueur\textwidth}%
+        \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
+        
+        % --- Calculs en nombres purs ---
+        \pgfmathsetmacro{\nbIntervallesPrincipaux}{int((\axeFin-\axeDebut)/\axePas)}%
+        \pgfmathsetmacro{\pasPrincipal}{\largeurTotale/\nbIntervallesPrincipaux}%
+        \pgfmathsetmacro{\pasSecondaire}{\pasPrincipal/\axeNombre}%
+        
+        % --- Dépassement après la dernière graduation ---
+        \pgfmathsetmacro{\depassement}{0.08*\largeurTotale}%
+        \pgfmathsetmacro{\largeurAxe}{\largeurTotale+\depassement}%
+        
+        % --- Axe principal ---
+        \draw[->, thick, >=stealth] (0,0) -- (\largeurAxe pt,0);
+        
+        % --- Graduations principales ---
+        \foreach \i in {0,1,...,\nbIntervallesPrincipaux} {%
+            \pgfmathsetmacro{\x}{\i*\pasPrincipal}%
+            \pgfmathsetmacro{\valeur}{\axeDebut+\i*\axePas}%
+            \draw[thick] (\x pt,0) -- (\x pt,-0.25) 
+                node[below, font=\small, yshift=-2pt] {\valeur};
+        }
+        
+        % --- Graduations secondaires ---
+        \pgfmathsetmacro{\nbSecondaires}{\nbIntervallesPrincipaux*\axeNombre}%
+        \foreach \i in {1,...,\nbSecondaires} {%
+            \pgfmathtruncatemacro{\estPrincipal}{mod(\i,\axeNombre)==0 ? 1 : 0}%
+            \ifnum\estPrincipal=0
+                \pgfmathsetmacro{\x}{\i*\pasSecondaire}%
+                \draw (\x pt,0) -- (\x pt,-0.12);
+            \fi
+        }
+        
+        % --- Placement des points ---
+        % Syntaxe : nom/position ou nom/position/couleur
+        % L'étiquette reste noire par défaut, l'intérieur est rouge par défaut.
+        \foreach \point in \axePoints {%
+            \StrCount{\point}{/}[\nbSlash]%
+            \ifnum\nbSlash=1
+                % Format nom/position → couleur par défaut rouge
+                \StrCut{\point}{/}{\nom}{\position}%
+                \def\couleurPoint{red}%
+            \else
+                % Format nom/position/couleur
+                \StrCut{\point}{/}{\nom}{\reste}%
+                \StrCut{\reste}{/}{\position}{\couleurPoint}%
+            \fi
+            \pgfmathsetmacro{\x}{((\position-\axeDebut)/(\axeFin-\axeDebut))*\largeurTotale}%
+            \fill[\couleurPoint] (\x pt,0) circle (2.5pt);
+            \draw[black, thick] (\x pt,0) circle (2.5pt);
+            \node[above, font=\small\bfseries, black, yshift=2pt] 
+                at (\x pt,0) {\nom};
+        }
+    \end{tikzpicture}%
+}
+
+% ============================================================
+% VARIANTE : \axegraduepoints (points en argument obligatoire)
+% ============================================================
+\NewDocumentCommand{\axegraduepoints}{O{} m}{%
+    \axegradue[#1, points={#2}]%
+}
+
+% ============================================================
+% SECTION 2 : (emplacement pour futures commandes)
+% ============================================================
+
+\endinput
