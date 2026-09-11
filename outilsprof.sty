@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.0
-% Date : 2026/09/10
+% Version : 1.2
+% Date : 2026/09/11
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/11 v1.1 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/11 v1.2 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -20,18 +20,18 @@
 \tcbuselibrary{skins}
 
 % ============================================================
-% SECTION 1 : AXE GRADUÉ
+% SECTION 1-A : AXE GRADUÉ
 % ============================================================
 % Paramètres nommés :
 %   longueur : largeur relative (0.8 = 80% de \textwidth)  [défaut : 0.8]
-%   debut    : début de la graduation (ex: 0)              [défaut : 0]
-%   fin      : fin de la graduation (ex: 400)              [défaut : 100]
-%   pas      : pas entre nombres repères (ex: 100)         [défaut : 10]
+%   debut    : début de la graduation                      [défaut : 0]
+%   fin      : fin de la graduation                        [défaut : 100]
+%   pas      : pas entre nombres repères                   [défaut : 10]
 %   nombre   : nombre de sous-intervalles entre repères    [défaut : 2]
-%   points   : liste de points {A/120, B/340/blue}         [défaut : vide]
+%   points   : liste {A/120, B/340/blue}                   [défaut : vide]
 %
 % Syntaxe des points :
-%   nom/position           → intérieur rouge (défaut), étiquette noire
+%   nom/position           → intérieur rouge (défaut)
 %   nom/position/couleur   → intérieur de la couleur spécifiée
 %
 % Exemples :
@@ -41,7 +41,6 @@
 %   \axegradue[points={A/120, B/340/blue, C/60/green}]
 % ============================================================
 
-% --- Définition des clés ---
 \ExplSyntaxOn
 \keys_define:nn { outilsprof / axegradue }
 {
@@ -59,51 +58,45 @@
     points   .initial:n = {},
 }
 
-% --- Macro pour récupérer les valeurs (utilisable hors ExplSyntax) ---
-\NewDocumentCommand{\axeRecuperer}{m}{%
+\cs_new_protected:Npn \__axe_recuperer:n #1
+{
     \keys_set:nn { outilsprof / axegradue } { #1 }
-    \tl_set_eq:NN \axeLongueur \l__axe_longueur_tl
-    \tl_set_eq:NN \axeDebut    \l__axe_debut_tl
-    \tl_set_eq:NN \axeFin      \l__axe_fin_tl
-    \tl_set_eq:NN \axePas      \l__axe_pas_tl
-    \tl_set_eq:NN \axeNombre   \l__axe_nombre_tl
-    \tl_set_eq:NN \axePoints   \l__axe_points_tl
+    \tl_set:Nx \axeLongueur { \l__axe_longueur_tl }
+    \tl_set:Nx \axeDebut    { \l__axe_debut_tl }
+    \tl_set:Nx \axeFin      { \l__axe_fin_tl }
+    \tl_set:Nx \axePas      { \l__axe_pas_tl }
+    \tl_set:Nx \axeNombre   { \l__axe_nombre_tl }
+    \tl_set:Nx \axePoints   { \l__axe_points_tl }
 }
 \ExplSyntaxOff
 
-% --- Longueur temporaire ---
 \newlength{\largeurPt}
 
-% ============================================================
-% COMMANDE PRINCIPALE : \axegradue
-% ============================================================
 \NewDocumentCommand{\axegradue}{O{}}{%
-    \axeRecuperer{#1}%
+    \csname __axe_recuperer:n\endcsname {#1}%
     \begin{tikzpicture}[every node/.style={font=\small}]
         % --- Largeur en nombre pur ---
         \setlength{\largeurPt}{\axeLongueur\textwidth}%
         \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
-        
-        % --- Calculs en nombres purs ---
+
+        % --- Calculs ---
         \pgfmathsetmacro{\nbIntervallesPrincipaux}{int((\axeFin-\axeDebut)/\axePas)}%
         \pgfmathsetmacro{\pasPrincipal}{\largeurTotale/\nbIntervallesPrincipaux}%
         \pgfmathsetmacro{\pasSecondaire}{\pasPrincipal/\axeNombre}%
-        
-        % --- Dépassement après la dernière graduation ---
         \pgfmathsetmacro{\depassement}{0.08*\largeurTotale}%
         \pgfmathsetmacro{\largeurAxe}{\largeurTotale+\depassement}%
-        
+
         % --- Axe principal ---
         \draw[->, thick, >=stealth] (0,0) -- (\largeurAxe pt,0);
-        
+
         % --- Graduations principales ---
         \foreach \i in {0,1,...,\nbIntervallesPrincipaux} {%
             \pgfmathsetmacro{\x}{\i*\pasPrincipal}%
             \pgfmathsetmacro{\valeur}{\axeDebut+\i*\axePas}%
-            \draw[thick] (\x pt,0) -- (\x pt,-0.25) 
+            \draw[thick] (\x pt,0) -- (\x pt,-0.25)
                 node[below, font=\small, yshift=-2pt] {\valeur};
         }
-        
+
         % --- Graduations secondaires ---
         \pgfmathsetmacro{\nbSecondaires}{\nbIntervallesPrincipaux*\axeNombre}%
         \foreach \i in {1,...,\nbSecondaires} {%
@@ -113,42 +106,393 @@
                 \draw (\x pt,0) -- (\x pt,-0.12);
             \fi
         }
-        
+
         % --- Placement des points ---
-        % Syntaxe : nom/position ou nom/position/couleur
-        % L'étiquette reste noire par défaut, l'intérieur est rouge par défaut.
         \foreach \point in \axePoints {%
             \StrCount{\point}{/}[\nbSlash]%
             \ifnum\nbSlash=1
-                % Format nom/position → couleur par défaut rouge
                 \StrCut{\point}{/}{\nom}{\position}%
                 \def\couleurPoint{red}%
             \else
-                % Format nom/position/couleur
                 \StrCut{\point}{/}{\nom}{\reste}%
                 \StrCut{\reste}{/}{\position}{\couleurPoint}%
             \fi
             \pgfmathsetmacro{\x}{((\position-\axeDebut)/(\axeFin-\axeDebut))*\largeurTotale}%
             \fill[\couleurPoint] (\x pt,0) circle (2.5pt);
             \draw[black, thick] (\x pt,0) circle (2.5pt);
-            \node[above, font=\small\bfseries, black, yshift=2pt] 
+            \node[above, font=\small\bfseries, black, yshift=2pt]
                 at (\x pt,0) {\nom};
         }
     \end{tikzpicture}%
 }
 
-% ============================================================
-% VARIANTE : \axegraduepoints (points en argument obligatoire)
-% ============================================================
 \NewDocumentCommand{\axegraduepoints}{O{} m}{%
     \axegradue[#1, points={#2}]%
+}
+
+% ============================================================
+% SECTION 1-B : REPÈRE GRADUÉ
+% ============================================================
+% Paramètres nommés :
+%   longueur : largeur relative (0.8 = 80% de \textwidth)   [défaut : 0.8]
+%   bg       : coin bas-gauche (x,y)                        [défaut : {(-10,-10)}]
+%   hd       : coin haut-droit (x,y)                        [défaut : {(10,10)}]
+%   origine  : point d'intersection des axes (x,y)          [défaut : {(0,0)}]
+%   grille   : pas de la grille fine (0 = pas de grille)    [défaut : 1]
+%   pasx     : pas entre repères sur l'axe des abscisses    [défaut : 1]
+%   pasy     : pas entre repères sur l'axe des ordonnées    [défaut : 1]
+%   nombrex  : nb de sous-intervalles entre repères (x)     [défaut : 1]
+%   nombrey  : nb de sous-intervalles entre repères (y)     [défaut : 1]
+%   points   : liste {A/(4,5), B/(-2,3)/blue}               [défaut : vide]
+%   affichernom    : afficher le nom du point               [défaut : true]
+%   affichercoords : afficher les coordonnées du point      [défaut : false]
+%
+% Étiquette de l'intersection :
+%   Si l'origine est (0,0), l'étiquette est "$O$".
+%   Sinon, l'étiquette est "$\Omega(a;b)$" avec les coordonnées
+%   de l'intersection.
+%
+% IMPORTANT (bg, hd, origine) : valeurs avec virgule à protéger
+% par des accolades :
+%   \reperegradue[bg={(-5,-5)}, hd={(5,5)}, origine={(0,0)}]
+%
+% La liste `points` accepte la syntaxe naturelle, sans accolades
+% supplémentaires autour des points :
+%   \reperegradue[points={A/(4,5), B/(-2,3)/blue, C/(1,-2)/green}]
+% Les virgules internes aux parenthèses sont automatiquement protégées.
+%
+% Syntaxe des points :
+%   nom/(x,y)            → intérieur rouge (défaut), étiquette noire
+%   nom/(x,y)/couleur    → intérieur de la couleur spécifiée
+% ============================================================
+
+\ExplSyntaxOn
+\keys_define:nn { outilsprof / reperegradue }
+{
+    longueur .tl_set:N  = \l__repere_longueur_tl,
+    longueur .initial:n = 0.8,
+    bg       .tl_set:N  = \l__repere_bg_tl,
+    bg       .initial:n = {(-10,-10)},
+    hd       .tl_set:N  = \l__repere_hd_tl,
+    hd       .initial:n = {(10,10)},
+    origine  .tl_set:N  = \l__repere_origine_tl,
+    origine  .initial:n = {(0,0)},
+    grille   .tl_set:N  = \l__repere_grille_tl,
+    grille   .initial:n = 1,
+    pasx     .tl_set:N  = \l__repere_pasx_tl,
+    pasx     .initial:n = 1,
+    pasy     .tl_set:N  = \l__repere_pasy_tl,
+    pasy     .initial:n = 1,
+    nombrex  .tl_set:N  = \l__repere_nombrex_tl,
+    nombrex  .initial:n = 1,
+    nombrey  .tl_set:N  = \l__repere_nombrey_tl,
+    nombrey  .initial:n = 1,
+    points   .tl_set:N  = \l__repere_points_tl,
+    points   .initial:n = {},
+    affichernom    .bool_set:N = \l__repere_affichernom_bool,
+    affichernom    .initial:n  = true,
+    affichercoords .bool_set:N = \l__repere_affichercoords_bool,
+    affichercoords .initial:n  = false,
+}
+
+\cs_new_protected:Npn \__repere_recuperer:n #1
+{
+    \keys_set:nn { outilsprof / reperegradue } { #1 }
+    \tl_set:Nx \repereLongueur { \l__repere_longueur_tl }
+    \tl_set:Nx \repereBG       { \l__repere_bg_tl }
+    \tl_set:Nx \repereHD       { \l__repere_hd_tl }
+    \tl_set:Nx \repereOrigine  { \l__repere_origine_tl }
+    \tl_set:Nx \repereGrille   { \l__repere_grille_tl }
+    \tl_set:Nx \reperePasX     { \l__repere_pasx_tl }
+    \tl_set:Nx \reperePasY     { \l__repere_pasy_tl }
+    \tl_set:Nx \repereNombreX  { \l__repere_nombrex_tl }
+    \tl_set:Nx \repereNombreY  { \l__repere_nombrey_tl }
+    \tl_set:Nx \reperePoints   { \l__repere_points_tl }
+    % Booléens : on les copie dans des macros LaTeX standard
+    \bool_if:NTF \l__repere_affichernom_bool
+        { \def\repereAfficherNom{1} }
+        { \def\repereAfficherNom{0} }
+    \bool_if:NTF \l__repere_affichercoords_bool
+        { \def\repereAfficherCoords{1} }
+        { \def\repereAfficherCoords{0} }
+}
+\ExplSyntaxOff
+
+% ============================================================
+% EXTRACTION DES COORDONNÉES (pur LaTeX)
+% ============================================================
+
+% --- Extrait x et y d'une chaîne "(x,y)" ---
+% #1 : chaîne "(x,y)"   #2 : macro recevant x   #3 : macro recevant y
+\newcommand{\repereExtraireCoords}[3]{%
+    \StrDel{#1}{(}[\tmpSansParenG]%
+    \StrDel{\tmpSansParenG}{)}[\tmpCoords]%
+    \StrCut{\tmpCoords}{,}{\tmpX}{\tmpY}%
+    \edef#2{\tmpX}%
+    \edef#3{\tmpY}%
+}
+
+% --- Découpe un point "nom/(x,y)" ou "nom/(x,y)/couleur" ---
+% #1 : chaîne du point
+% #2 : macro recevant le nom
+% #3 : macro recevant les coordonnées "(x,y)"
+% #4 : macro recevant la couleur
+\newcommand{\repereDecouperPoint}[4]{%
+    \StrCount{#1}{/}[\tmpNbSlash]%
+    \ifnum\tmpNbSlash=1
+        % Cas nom/(x,y) → couleur rouge par défaut
+        \StrCut{#1}{/}{\tmpNom}{\tmpCoords}%
+        \edef#2{\tmpNom}%
+        \edef#3{\tmpCoords}%
+        \def#4{red}%
+    \else
+        % Cas nom/(x,y)/couleur
+        \StrCut{#1}{/}{\tmpNom}{\tmpReste}%
+        \StrCut{\tmpReste}{/}{\tmpCoords}{\tmpCouleur}%
+        \edef#2{\tmpNom}%
+        \edef#3{\tmpCoords}%
+        \edef#4{\tmpCouleur}%
+    \fi
+}
+
+% ============================================================
+% DÉCOUPAGE DE LA LISTE `points` SUR LES VIRGULES DE NIVEAU 0
+% ============================================================
+% Analyse #1 caractère par caractère et construit dans
+% \repereListeElements une liste de la forme :
+%   {premier}, {deuxième}, {troisième}
+% où chaque élément a été protégé par des accolades et séparé par
+% une virgule. Les virgules internes aux parenthèses sont ainsi
+% ignorées.
+\newcounter{repereProfondeur}
+\def\repereListeElements{}
+\def\repereElementCourant{}
+\newif\ifreperePremierElement
+
+\newcommand{\repereDecouperListe}[1]{%
+    \setcounter{repereProfondeur}{0}%
+    \def\repereListeElements{}%
+    \def\repereElementCourant{}%
+    \reperePremierElementtrue
+    \repereDecouperListeAux#1\@nil
+    \ifx\repereElementCourant\@empty\else
+        \repereAjouterElement
+    \fi
+}
+
+% Ajoute \repereElementCourant à \repereListeElements
+% (avec une virgule séparatrice sauf pour le premier élément).
+\newcommand{\repereAjouterElement}{%
+    \ifreperePremierElement
+        \reperePremierElementfalse
+        \expandafter\g@addto@macro\expandafter\repereListeElements
+            \expandafter{\expandafter{\repereElementCourant}}%
+    \else
+        \expandafter\g@addto@macro\expandafter\repereListeElements
+            \expandafter{\expandafter,\expandafter{\repereElementCourant}}%
+    \fi
+    \def\repereElementCourant{}%
+}
+
+\def\repereDecouperListeAux#1{%
+    \ifx#1\@nil
+        % Fin de la chaîne
+    \else
+        \ifx#1(%
+            \stepcounter{repereProfondeur}%
+            \expandafter\g@addto@macro\expandafter\repereElementCourant
+                \expandafter{(}%
+        \else
+            \ifx#1)%
+                \addtocounter{repereProfondeur}{-1}%
+                \expandafter\g@addto@macro\expandafter\repereElementCourant
+                    \expandafter{)}%
+            \else
+                \ifnum\value{repereProfondeur}=0
+                    \ifx#1,%
+                        \ifx\repereElementCourant\@empty\else
+                            \repereAjouterElement
+                        \fi
+                    \else
+                        \expandafter\g@addto@macro
+                            \expandafter\repereElementCourant
+                            \expandafter{#1}%
+                    \fi
+                \else
+                    \expandafter\g@addto@macro
+                        \expandafter\repereElementCourant
+                        \expandafter{#1}%
+                \fi
+            \fi
+        \fi
+        \expandafter\repereDecouperListeAux
+    \fi
+}
+
+% ============================================================
+% COMMANDE PRINCIPALE : \reperegradue
+% ============================================================
+\NewDocumentCommand{\reperegradue}{O{}}{%
+    % --- Récupération des clés ---
+    \csname __repere_recuperer:n\endcsname {#1}%
+    % --- Extraction des coordonnées de la fenêtre ---
+    \repereExtraireCoords{\repereBG}{\bgX}{\bgY}%
+    \repereExtraireCoords{\repereHD}{\hdX}{\hdY}%
+    \repereExtraireCoords{\repereOrigine}{\oriX}{\oriY}%
+    % --- Découpage de la liste des points ---
+    \expandafter\repereDecouperListe\expandafter{\reperePoints}%
+    % --- Largeur en points ---
+    \setlength{\largeurPt}{\repereLongueur\textwidth}%
+    \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
+    % --- Échelle ---
+    \pgfmathsetmacro{\etendueX}{\hdX-\bgX}%
+    \pgfmathsetmacro{\etendueY}{\hdY-\bgY}%
+    \pgfmathsetmacro{\unite}{\largeurTotale/\etendueX}%
+    \pgfmathsetmacro{\hauteurTotale}{\etendueY*\unite}%
+    \pgfmathsetmacro{\oriXfig}{(\oriX-\bgX)*\unite}%
+    \pgfmathsetmacro{\oriYfig}{(\oriY-\bgY)*\unite}%
+
+    \begin{tikzpicture}[every node/.style={font=\small}]
+        \useasboundingbox (0,0) rectangle (\largeurTotale pt,\hauteurTotale pt);
+
+        % --- Grille fine (optionnelle) ---
+        \pgfmathparse{\repereGrille > 0 ? 1 : 0}%
+        \ifnum\pgfmathresult=1
+            \pgfmathsetmacro{\nbGrilleX}{int(\etendueX/\repereGrille)}%
+            \pgfmathsetmacro{\nbGrilleY}{int(\etendueY/\repereGrille)}%
+            \foreach \i in {0,1,...,\nbGrilleX} {%
+                \pgfmathsetmacro{\x}{\bgX+\i*\repereGrille}%
+                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                \draw[gray!25, very thin]
+                    (\xFig pt,0) -- (\xFig pt,\hauteurTotale pt);
+            }%
+            \foreach \i in {0,1,...,\nbGrilleY} {%
+                \pgfmathsetmacro{\y}{\bgY+\i*\repereGrille}%
+                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                \draw[gray!25, very thin]
+                    (0,\yFig pt) -- (\largeurTotale pt,\yFig pt);
+            }%
+        \fi
+
+        % --- Axes principaux (avec flèches) ---
+        \draw[->, thick, >=stealth]
+            (0,\oriYfig pt) -- (\largeurTotale pt,\oriYfig pt);
+        \draw[->, thick, >=stealth]
+            (\oriXfig pt,0) -- (\oriXfig pt,\hauteurTotale pt);
+
+        % --- Graduations principales : axe des abscisses ---
+        \pgfmathsetmacro{\nbX}{int((\hdX-\bgX)/\reperePasX)}%
+        \foreach \i in {0,1,...,\nbX} {%
+            \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX}%
+            \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
+            \ifnum\pgfmathresult=1
+                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                \draw[thick]
+                    (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.2);
+                \pgfmathparse{abs(\x) < 0.001 ? 0 : 1}%
+                \ifnum\pgfmathresult=1
+                    \node[below, font=\small, yshift=-2pt]
+                        at (\xFig pt,\oriYfig pt)
+                        {\pgfmathprintnumber[fixed,precision=2]{\x}};
+                \fi
+            \fi
+        }%
+
+        % --- Graduations principales : axe des ordonnées ---
+        \pgfmathsetmacro{\nbY}{int((\hdY-\bgY)/\reperePasY)}%
+        \foreach \i in {0,1,...,\nbY} {%
+            \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY}%
+            \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
+            \ifnum\pgfmathresult=1
+                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                \draw[thick]
+                    (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.2,\yFig pt);
+                \pgfmathparse{abs(\y) < 0.001 ? 0 : 1}%
+                \ifnum\pgfmathresult=1
+                    \node[left, font=\small, xshift=-2pt]
+                        at (\oriXfig pt,\yFig pt)
+                        {\pgfmathprintnumber[fixed,precision=2]{\y}};
+                \fi
+            \fi
+        }%
+
+        % --- Étiquette de l'intersection des axes ---
+        % Si l'origine est (0,0), afficher "$O$".
+        % Sinon, afficher "$\Omega(a;b)$" avec les coordonnées.
+        \pgfmathparse{abs(\oriX) < 0.001 && abs(\oriY) < 0.001 ? 1 : 0}%
+        \ifnum\pgfmathresult=1
+            \node[below left, font=\small, xshift=1pt, yshift=-2pt]
+                at (\oriXfig pt,\oriYfig pt) {$O$};
+        \else
+            \node[below left, font=\small, xshift=1pt, yshift=-2pt]
+                at (\oriXfig pt,\oriYfig pt)
+                {$\Omega(\pgfmathprintnumber[fixed,precision=2]{\oriX};%
+                          \pgfmathprintnumber[fixed,precision=2]{\oriY})$};
+        \fi
+
+        % --- Graduations secondaires (sous-intervalles) ---
+        \pgfmathsetmacro{\nbSecX}{\nbX*\repereNombreX}%
+        \foreach \i in {1,...,\nbSecX} {%
+            \pgfmathparse{mod(\i,\repereNombreX)==0 ? 1 : 0}%
+            \ifnum\pgfmathresult=0
+                \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX/\repereNombreX}%
+                \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
+                \ifnum\pgfmathresult=1
+                    \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                    \draw
+                        (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.1);
+                \fi
+            \fi
+        }%
+        \pgfmathsetmacro{\nbSecY}{\nbY*\repereNombreY}%
+        \foreach \i in {1,...,\nbSecY} {%
+            \pgfmathparse{mod(\i,\repereNombreY)==0 ? 1 : 0}%
+            \ifnum\pgfmathresult=0
+                \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY/\repereNombreY}%
+                \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
+                \ifnum\pgfmathresult=1
+                    \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                    \draw
+                        (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.1,\yFig pt);
+                \fi
+            \fi
+        }%
+
+        % --- Placement des points ---
+        \foreach \point in \repereListeElements {%
+            \repereDecouperPoint{\point}{\nomPoint}{\coordsPoint}{\couleurPoint}%
+            \repereExtraireCoords{\coordsPoint}{\px}{\py}%
+            \pgfmathsetmacro{\pxFig}{(\px-\bgX)*\unite}%
+            \pgfmathsetmacro{\pyFig}{(\py-\bgY)*\unite}%
+            \fill[\couleurPoint] (\pxFig pt,\pyFig pt) circle (2.5pt);
+            \draw[black, thick] (\pxFig pt,\pyFig pt) circle (2.5pt);
+            % --- Étiquette du nom ---
+            \ifnum\repereAfficherNom=1
+                \node[above right, font=\small\bfseries, black,
+                      xshift=2pt, yshift=1pt]
+                    at (\pxFig pt,\pyFig pt) {\nomPoint};
+            \fi
+            % --- Étiquette des coordonnées ---
+            \ifnum\repereAfficherCoords=1
+                \node[below right, font=\scriptsize, black,
+                      xshift=2pt, yshift=-1pt]
+                    at (\pxFig pt,\pyFig pt)
+                    {(\pgfmathprintnumber[fixed,precision=2]{\px};%
+                      \pgfmathprintnumber[fixed,precision=2]{\py})};
+            \fi
+        }%
+    \end{tikzpicture}%
+}
+
+\NewDocumentCommand{\reperegraduepoints}{O{} m}{%
+    \reperegradue[#1, points={#2}]%
 }
 
 % ============================================================
 % SECTION 2 : BOÎTES COLORÉES
 % ============================================================
 
-% --- Définition des couleurs par défaut ---
+% --- Couleurs par défaut ---
 \definecolor{couleurRetenir}{RGB}{0,102,204}    % Bleu
 \definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
 \definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
@@ -166,10 +510,7 @@
         arc=4pt,
         boxrule=1pt,
         title={\textbf{À retenir absolument}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
         #2
     \end{tcolorbox}%
@@ -188,10 +529,7 @@
         arc=4pt,
         boxrule=1pt,
         title={\textbf{Attention !}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
         #2
     \end{tcolorbox}%
@@ -210,10 +548,7 @@
         arc=4pt,
         boxrule=0.5pt,
         title={\textbf{Méthode de résolution}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
         #2
     \end{tcolorbox}%
@@ -221,7 +556,7 @@
 
 % ============================================================
 % BOÎTE CALCUL
-% Commande avec 2 arguments optionnels
+% Commande avec 2 arguments optionnels + contenu obligatoire
 % Par défaut : largeur = 10cm, hauteur = 3cm
 % ============================================================
 \NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} +m}{%
@@ -253,10 +588,7 @@
         arc=4pt,
         boxrule=1pt,
         title={\textbf{À retenir absolument}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
 }{%
     \end{tcolorbox}%
@@ -272,10 +604,7 @@
         arc=4pt,
         boxrule=1pt,
         title={\textbf{Attention !}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
 }{%
     \end{tcolorbox}%
@@ -291,10 +620,7 @@
         arc=4pt,
         boxrule=0.5pt,
         title={\textbf{Méthode de résolution}},
-        top=3mm,
-        bottom=3mm,
-        left=3mm,
-        right=3mm
+        top=3mm, bottom=3mm, left=3mm, right=3mm
     ]
 }{%
     \end{tcolorbox}%

@@ -1,0 +1,389 @@
+% ============================================================
+% exemples.tex
+% Fichier de démonstration du package outilsprof
+% Auteur : Jean Roussie
+% Date : 2026/09/11
+% ============================================================
+
+\documentclass[11pt,a4paper]{article}
+
+% --- Encodage et langue ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% --- Mise en page ---
+\usepackage[margin=2cm]{geometry}
+\usepackage{parskip}
+
+% --- Mathématiques ---
+\usepackage{amsmath,amssymb}
+
+% --- Le package à démontrer ---
+\usepackage{outilsprof}
+
+% --- Titre ---
+\title{\textbf{Démonstration du package \texttt{outilsprof}}\\
+       \large Outils pour l'enseignement des mathématiques}
+\author{Jean Roussie \\ \small Collège La Boétie — Sarlat (Dordogne)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Axe gradué}
+% ============================================================
+
+\subsection{Axe par défaut}
+
+\begin{center}
+\axegradue
+\end{center}
+
+\subsection{Axe de 0 à 400, pas de 100, 5 sous-intervalles}
+
+\begin{center}
+\axegradue[longueur=0.8, fin=400, pas=100, nombre=5]
+\end{center}
+
+\subsection{Axe de 100 à 500}
+
+\begin{center}
+\axegradue[debut=100, fin=500, pas=100, nombre=5]
+\end{center}
+
+\subsection{Axe avec points}
+
+\begin{center}
+\axegradue[fin=400, pas=100, nombre=5, points={A/120, B/340/blue, C/60/green}]
+\end{center}
+
+\subsection{Variante \texttt{\textbackslash axegraduepoints}}
+
+\begin{center}
+\axegraduepoints[longueur=0.8, fin=400, pas=100, nombre=5]{A/120, B/340/blue, C/60/green}
+\end{center}
+
+% ============================================================
+\section{Repère gradué}
+% ============================================================
+
+\subsection{Repère par défaut}
+
+\begin{center}
+\reperegradue
+\end{center}
+
+\subsection{Fenêtre personnalisée $[-5,5]\times[-5,5]$, grille de 1}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}, grille=1]
+\end{center}
+
+\subsection{Fenêtre $[-4,3]\times[-2,6]$, grille de 0.5}
+
+\begin{center}
+\reperegradue[bg={(-4,-2)}, hd={(3,6)}, grille=0.5]
+\end{center}
+
+\subsection{Grille désactivée}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}, grille=0]
+\end{center}
+
+\subsection{Graduations principales personnalisées}
+
+\subsubsection{pasx=2, pasy=2}
+
+\begin{center}
+\reperegradue[bg={(-10,-10)}, hd={(10,10)}, pasx=2, pasy=2, grille=1]
+\end{center}
+
+\subsubsection{pasx=5, pasy=5, nombrex=5, nombrey=5}
+
+\begin{center}
+\reperegradue[bg={(-10,-10)}, hd={(10,10)},
+              pasx=5, pasy=5, nombrex=5, nombrey=5, grille=1]
+\end{center}
+
+% ============================================================
+\section{Étiquette de l'intersection des axes}
+% ============================================================
+
+\subsection{Origine en $O(0,0)$}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}]
+\end{center}
+
+\subsection{Intersection en $\Omega(2;3)$}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}, origine={(2,3)}]
+\end{center}
+
+\subsection{Intersection en $\Omega(-3;-2)$}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}, origine={(-3,-2)}]
+\end{center}
+
+\subsection{Intersection sur l'axe des ordonnées : $\Omega(0;3)$}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)}, origine={(0,3)}]
+\end{center}
+
+% ============================================================
+\section{Placement de points}
+% ============================================================
+
+\subsection{Un seul point (rouge par défaut)}
+
+\begin{center}
+\reperegradue[bg={(-6,-6)}, hd={(6,6)}, points={A/(4,5)}]
+\end{center}
+
+\subsection{Points avec couleurs}
+
+\begin{center}
+\reperegradue[bg={(-6,-6)}, hd={(6,6)}, grille=1,
+              points={A/(4,5), B/(-2,3)/blue, C/(1,-2)/green}]
+\end{center}
+
+\subsection{Couleurs composées TikZ}
+
+\begin{center}
+\reperegradue[bg={(-4,-4)}, hd={(4,4)}, grille=0.5,
+              points={D/(0.5,-3.75)/orange!80!black,
+                      E/(-1.5,2.25)/red!70}]
+\end{center}
+
+\subsection{Points sur les axes et à l'origine}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={O/(0,0)/black, X/(5,0)/blue, Y/(0,5)/green}]
+\end{center}
+
+% ============================================================
+\section{Options d'affichage des points}
+% ============================================================
+
+\subsection{Noms affichés, coordonnées masquées (défaut)}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={A/(4,5), B/(-2,3)/blue},
+              affichernom=true, affichercoords=false]
+\end{center}
+
+\subsection{Noms et coordonnées affichés}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={A/(4,5), B/(-2,3)/blue},
+              affichernom=true, affichercoords=true]
+\end{center}
+
+\subsection{Noms masqués, coordonnées affichées}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={A/(4,5), B/(-2,3)/blue},
+              affichernom=false, affichercoords=true]
+\end{center}
+
+\subsection{Noms et coordonnées masqués (points seuls)}
+
+\begin{center}
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={A/(4,5), B/(-2,3)/blue},
+              affichernom=false, affichercoords=false]
+\end{center}
+
+% ============================================================
+\section{Variante \texttt{\textbackslash reperegraduepoints}}
+% ============================================================
+
+\begin{center}
+\reperegraduepoints[bg={(-5,-5)}, hd={(5,5)}]{A/(2,3), B/(-1,-2)/orange}
+\end{center}
+
+% ============================================================
+\section{Cas combiné : toutes les options}
+% ============================================================
+
+\begin{verbatim}
+\reperegradue[
+    bg=(-4,-3), hd=(6,4),
+    origine=(0,0),
+    grille=0.5,
+    pasx=1, pasy=1,
+    nombrex=2, nombrey=2,
+    points={A/(3,2), B/(-2,1)/blue, C/(1,-2)/green},
+    affichernom=true, affichercoords=true
+]
+\end{verbatim}
+
+\begin{center}
+\reperegradue[
+    bg={(-4,-3)}, hd={(6,4)},
+    origine={(0,0)},
+    grille=0.5,
+    pasx=1, pasy=1,
+    nombrex=2, nombrey=2,
+    points={A/(3,2), B/(-2,1)/blue, C/(1,-2)/green},
+    affichernom=true, affichercoords=true
+]
+\end{center}
+
+% ============================================================
+\section{Utilisation pédagogique}
+% ============================================================
+
+\subsection{Placer des points dans un repère}
+
+\begin{methode}
+    Pour placer un point $A(x_A, y_A)$ dans un repère :
+    \begin{enumerate}
+        \item Repérer $x_A$ sur l'axe des abscisses ;
+        \item Repérer $y_A$ sur l'axe des ordonnées ;
+        \item Tracer les parallèles aux axes passant par ces repères ;
+        \item Le point $A$ est à l'intersection.
+    \end{enumerate}
+\end{methode}
+
+\begin{center}
+\reperegradue[bg={(-3,-3)}, hd={(5,5)},
+              points={A/(3,2)/blue, B/(-2,1)/green, C/(1,-2)/red}]
+\end{center}
+
+\subsection{Lire les coordonnées d'un point}
+
+\begin{retenir}
+    Un point $M$ du plan est repéré par un couple unique $(x_M, y_M)$ :
+    $x_M$ est son abscisse, $y_M$ son ordonnée.
+\end{retenir}
+
+\begin{center}
+\reperegradue[bg={(-4,-4)}, hd={(4,4)},
+              points={M/(2,3)/orange}]
+\end{center}
+
+\begin{vigilance}
+    Ne pas confondre \textbf{abscisse} (axe horizontal) et
+    \textbf{ordonnée} (axe vertical) !
+\end{vigilance}
+
+% ============================================================
+\section{Boîtes colorées}
+% ============================================================
+
+\subsection{Boîte « À retenir » (bleu par défaut)}
+
+\begin{retenir}
+    Le théorème de Pythagore : dans un triangle rectangle, le carré de
+    l'hypoténuse est égal à la somme des carrés des deux autres côtés.
+    \[
+        a^2 + b^2 = c^2
+    \]
+\end{retenir}
+
+\subsection{Boîte « Attention ! » (rouge par défaut)}
+
+\begin{vigilance}
+    Ne pas oublier de vérifier les unités avant tout calcul !
+    Un résultat sans unité est un résultat faux.
+\end{vigilance}
+
+\subsection{Boîte « Méthode » (vert par défaut)}
+
+\begin{methode}
+    Pour résoudre une équation du premier degré :
+    \begin{enumerate}
+        \item Regrouper les termes en $x$ dans un membre ;
+        \item Regrouper les constantes dans l'autre membre ;
+        \item Simplifier chaque membre ;
+        \item Diviser par le coefficient de $x$.
+    \end{enumerate}
+\end{methode}
+
+\subsection{Boîtes avec couleur personnalisée}
+
+\begin{retenir}[orange]
+    Version personnalisée en orange : utile pour mettre en avant une
+    notion secondaire.
+\end{retenir}
+
+\begin{vigilance}[purple]
+    Version personnalisée en violet : pour une remarque intermédiaire.
+\end{vigilance}
+
+\begin{methode}[cyan!80!black]
+    Version personnalisée en cyan foncé.
+\end{methode}
+
+\subsection{Versions sous forme de commandes}
+
+\boiteRetenir{Version courte avec la commande \texttt{\textbackslash boiteRetenir}.}
+
+\boiteVigilance{Version courte avec la commande \texttt{\textbackslash boiteVigilance}.}
+
+\boiteMethode{Version courte avec la commande \texttt{\textbackslash boiteMethode}.}
+
+% ============================================================
+\section{Boîte de calcul}
+% ============================================================
+
+\subsection{Boîte de calcul par défaut (10\,cm $\times$ 3\,cm)}
+
+\begin{center}
+\boitecalcul{$2 + 2 = 4$}
+\end{center}
+
+\subsection{Boîte de calcul personnalisée (8\,cm $\times$ 4\,cm)}
+
+\begin{center}
+\boitecalcul[8cm][4cm]{$\dfrac{3}{4} + \dfrac{1}{2} = \dfrac{5}{4}$}
+\end{center}
+
+\subsection{Boîte de calcul large (12\,cm $\times$ 5\,cm)}
+
+\begin{center}
+\boitecalcul[12cm][5cm]{%
+    $\displaystyle \int_0^1 x^2 \, \mathrm{d}x = \frac{1}{3}$%
+}
+\end{center}
+
+% ============================================================
+\section{Combinaison des outils}
+% ============================================================
+
+\begin{methode}
+    Pour placer un point $A$ d'abscisse 120 sur un axe gradué, on
+    repère la position entre 100 et 200, puis on utilise les graduations
+    secondaires.
+\end{methode}
+
+\begin{center}
+\axegradue[fin=400, pas=100, nombre=5, points={A/120/red, B/340/blue}]
+\end{center}
+
+\begin{retenir}
+    Un point est entièrement déterminé par son abscisse sur l'axe.
+\end{retenir}
+
+\begin{vigilance}
+    Attention au sens de lecture : l'axe est orienté de la gauche vers
+    la droite.
+\end{vigilance}
+
+\end{document}
