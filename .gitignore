@@ -24,4 +24,7 @@
 # Fichiers de compilation
 *.pdf
 !doc/*.pdf
-!exemples/*.pdf
+!exemples/*.pdfoutilsprof.pdf
+
+# Exception : garder le PDF d'exemple
+!examples/exemples.pdf
