@@ -7,7 +7,7 @@
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/10 v2.4 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/11 v1.1 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -16,6 +16,8 @@
 \RequirePackage{pgffor}
 \RequirePackage{xparse}
 \RequirePackage{xstring}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
 
 % ============================================================
 % SECTION 1 : AXE GRADUÉ
@@ -143,7 +145,159 @@
 }
 
 % ============================================================
-% SECTION 2 : (emplacement pour futures commandes)
+% SECTION 2 : BOÎTES COLORÉES
 % ============================================================
+
+% --- Définition des couleurs par défaut ---
+\definecolor{couleurRetenir}{RGB}{0,102,204}    % Bleu
+\definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
+\definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
+
+% ============================================================
+% BOÎTE À RETENIR (bleu par défaut)
+% Paramètre optionnel : couleur
+% ============================================================
+\NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
+    \begin{tcolorbox}[
+        colback=#1!10,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=1pt,
+        title={\textbf{À retenir absolument}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+        #2
+    \end{tcolorbox}%
+}
+
+% ============================================================
+% BOÎTE VIGILANCE (rouge par défaut)
+% Paramètre optionnel : couleur
+% ============================================================
+\NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
+    \begin{tcolorbox}[
+        colback=#1!10,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=1pt,
+        title={\textbf{Attention !}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+        #2
+    \end{tcolorbox}%
+}
+
+% ============================================================
+% BOÎTE MÉTHODE (vert par défaut)
+% Paramètre optionnel : couleur
+% ============================================================
+\NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
+    \begin{tcolorbox}[
+        colback=#1!5,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=0.5pt,
+        title={\textbf{Méthode de résolution}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+        #2
+    \end{tcolorbox}%
+}
+
+% ============================================================
+% BOÎTE CALCUL
+% Commande avec 2 arguments optionnels
+% Par défaut : largeur = 10cm, hauteur = 3cm
+% ============================================================
+\NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} +m}{%
+    \begin{tcolorbox}[
+        colback=white,
+        colframe=gray!30,
+        arc=3pt,
+        boxrule=0.5pt,
+        width=#1,
+        height=#2,
+        valign=center,
+        halign=center
+    ]
+        #3
+    \end{tcolorbox}%
+}
+
+% ============================================================
+% VARIANTES AVEC ENVIRONNEMENTS (pour compatibilité)
+% ============================================================
+
+% Environnement retenir (bleu par défaut)
+\NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
+    \begin{tcolorbox}[
+        colback=#1!10,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=1pt,
+        title={\textbf{À retenir absolument}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+}{%
+    \end{tcolorbox}%
+}
+
+% Environnement vigilance (rouge par défaut)
+\NewDocumentEnvironment{vigilance}{O{couleurVigilance}}{%
+    \begin{tcolorbox}[
+        colback=#1!10,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=1pt,
+        title={\textbf{Attention !}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+}{%
+    \end{tcolorbox}%
+}
+
+% Environnement methode (vert par défaut)
+\NewDocumentEnvironment{methode}{O{couleurMethode}}{%
+    \begin{tcolorbox}[
+        colback=#1!5,
+        colframe=#1,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=0.5pt,
+        title={\textbf{Méthode de résolution}},
+        top=3mm,
+        bottom=3mm,
+        left=3mm,
+        right=3mm
+    ]
+}{%
+    \end{tcolorbox}%
+}
 
 \endinput
